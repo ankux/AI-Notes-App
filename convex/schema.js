@@ -4,7 +4,7 @@ import { v } from "convex/values";
 export default defineSchema({
     users: defineTable({
         userName:v.string(),
-        eamil:v.string(),
+        email:v.string(),
         imageUrl:v.string()
     })
 })
