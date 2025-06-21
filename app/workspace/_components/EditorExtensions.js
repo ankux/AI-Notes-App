@@ -1,14 +1,20 @@
 import React from 'react'
 import { Bold, Italic, Strikethrough, Heading1, Heading2, Heading3, List, Code, ListOrdered, Highlighter, Quote, AlignLeft, AlignCenter, AlignRight, Underline, Sparkles } from 'lucide-react'
-import { useAction } from 'convex/react'
+import { useAction, useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useParams } from 'next/navigation'
 import { chatSession } from '@/configs/AIModel'
+import { toast } from 'sonner'
+import { useUser } from '@clerk/nextjs'
 
 function EditorExtensions({editor}) {
 
     const { fileId } = useParams(); 
     const searchAI = useAction(api.myAction.search);
+    const saveNotes = useMutation(api.notes.AddNotes);
+    const {user} = useUser();
+
+    // Function to handle the AI button click
     const onAiButtonClick = async () => {
         const selectedText = editor.state.doc.textBetween(
             editor.state.selection.from,
@@ -17,7 +23,7 @@ function EditorExtensions({editor}) {
         )
 
         if (selectedText.trim() === '') {
-            alert('Please select some text first');
+            toast.error('Please select some text first');
             return;
         }
 
@@ -35,12 +41,20 @@ function EditorExtensions({editor}) {
 
         const PROMPT = "For the given question/query: " + selectedText + " and the following notes/references: " + allUnformattedAns + " , generate a response relevant to the question/query and the notes/references provided. The response should be in HTML format without it's boilerplate.";
 
+        // Send the prompt to the AI model
         const AIModelResult = await chatSession.sendMessage(PROMPT);
 
+        // Get the final answer from the AI model
         const finalAns = AIModelResult.response.text().replace('```', '').replace('html', '').replace('```', '');
         const allText = editor.getHTML();
         editor.commands.setContent(allText + "<p> <strong> Answer:  </strong> </p>" + finalAns);
-
+        
+        // Save the notes to the database
+        saveNotes({
+            notes: editor.getHTML(),
+            fileId: fileId,
+            createdBy: user?.primaryEmailAddress?.emailAddress
+        });
     }
 
   return editor && (

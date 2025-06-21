@@ -18,8 +18,9 @@ import { Loader2Icon } from 'lucide-react'
 import uuid4 from 'uuid4'
 import { useUser } from '@clerk/nextjs'
 import axios from 'axios'
+import { toast } from 'sonner'
 
-const UploadPdfDialog = ({ children }) => {
+const UploadPdfDialog = ({ children, isMaxLimit }) => {
 
     const generateUploadUrl = useMutation(api.fileStorage.generateUploadUrl);
     const addFileEntry = useMutation(api.fileStorage.AddFileEntryToDb)
@@ -69,12 +70,13 @@ const UploadPdfDialog = ({ children }) => {
 
         setLoading(false);
         setOpen(false);
+        toast.success('File uploaded successfully');
     }
 
     return (
         <Dialog open={open}>
             <DialogTrigger asChild>
-                <Button onClick={()=>setOpen(true)} className='w-full'> + Upload PDF File</Button>
+                <Button onClick={()=>setOpen(true)} disabled={isMaxLimit} className='w-full'> + Upload PDF File</Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
