@@ -27,7 +27,7 @@ const UploadPdfDialog = ({ children }) => {
     const embededDocument = useAction(api.myAction.ingest);
     const { user } = useUser();
     const [file, setFile] = useState();
-    const[loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [fileName, setFileName] = useState();
     const [open, setOpen] = useState(false);
     const OnFileSelect = (event) => {
@@ -62,11 +62,11 @@ const UploadPdfDialog = ({ children }) => {
 
         //API call to fetch PDF process data
         const ApiResponse = await axios.get('/api/pdf-loader?pdfUrl=' + fileUrl);
-        console.log(ApiResponse.data.result);
         await embededDocument({
             splitText: ApiResponse.data.result,
             fileId: fileId
         });
+
         setLoading(false);
         setOpen(false);
     }

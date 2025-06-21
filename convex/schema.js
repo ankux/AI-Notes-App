@@ -22,6 +22,6 @@ export default defineSchema({
         metadata: v.any(),
     }).vectorIndex("byEmbedding", {
         vectorField: "embedding",
-        dimensions: 1536,
+        dimensions: 768,
     }),
 })
