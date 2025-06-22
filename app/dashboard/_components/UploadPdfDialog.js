@@ -74,7 +74,7 @@ const UploadPdfDialog = ({ children, isMaxLimit }) => {
     }
 
     return (
-        <Dialog open={open}>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button onClick={()=>setOpen(true)} disabled={isMaxLimit} className='w-full'> + Upload PDF File</Button>
             </DialogTrigger>

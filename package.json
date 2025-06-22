@@ -14,6 +14,7 @@
     "@langchain/community": "^0.3.28",
     "@langchain/core": "^0.3.37",
     "@langchain/google-genai": "^0.1.8",
+    "@paypal/react-paypal-js": "^8.8.3",
     "@radix-ui/react-dialog": "^1.1.5",
     "@radix-ui/react-progress": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.1",

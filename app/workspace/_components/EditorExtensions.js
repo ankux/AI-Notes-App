@@ -1,5 +1,5 @@
-import React from 'react'
-import { Bold, Italic, Strikethrough, Heading1, Heading2, Heading3, List, Code, ListOrdered, Highlighter, Quote, AlignLeft, AlignCenter, AlignRight, Underline, Sparkles } from 'lucide-react'
+import React, { useState } from 'react'
+import { Bold, Italic, Strikethrough, Heading1, Heading2, Heading3, List, Code, ListOrdered, Highlighter, Quote, AlignLeft, AlignCenter, AlignRight, Underline, Sparkles, Download, Loader2 } from 'lucide-react'
 import { useAction, useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useParams } from 'next/navigation'
@@ -13,6 +13,7 @@ function EditorExtensions({editor}) {
     const searchAI = useAction(api.myAction.search);
     const saveNotes = useMutation(api.notes.AddNotes);
     const {user} = useUser();
+    const [isAiLoading, setIsAiLoading] = useState(false);
 
     // Function to handle the AI button click
     const onAiButtonClick = async () => {
@@ -27,35 +28,77 @@ function EditorExtensions({editor}) {
             return;
         }
 
-        const result = await searchAI({
-            query: selectedText,
-            fileId: fileId
-        });
+        setIsAiLoading(true);
 
-        const unformattedAns = JSON.parse(result);
+        try {
+            const result = await searchAI({
+                query: selectedText,
+                fileId: fileId
+            });
 
-        let allUnformattedAns = '';
-        unformattedAns && unformattedAns.forEach(item => {
-            allUnformattedAns += item.pageContent;
-        });
+            const unformattedAns = JSON.parse(result);
 
-        const PROMPT = "For the given question/query: " + selectedText + " and the following notes/references: " + allUnformattedAns + " , generate a response relevant to the question/query and the notes/references provided. The response should be in HTML format without it's boilerplate.";
+            let allUnformattedAns = '';
+            unformattedAns && unformattedAns.forEach(item => {
+                allUnformattedAns += item.pageContent;
+            });
 
-        // Send the prompt to the AI model
-        const AIModelResult = await chatSession.sendMessage(PROMPT);
+            const PROMPT = "For the given question/query: " + selectedText + " and the following notes/references: " + allUnformattedAns + " , generate a response relevant to the question/query and the notes/references provided. The response should be in HTML format without it's boilerplate.";
 
-        // Get the final answer from the AI model
-        const finalAns = AIModelResult.response.text().replace('```', '').replace('html', '').replace('```', '');
-        const allText = editor.getHTML();
-        editor.commands.setContent(allText + "<p> <strong> Answer:  </strong> </p>" + finalAns);
-        
-        // Save the notes to the database
-        saveNotes({
-            notes: editor.getHTML(),
-            fileId: fileId,
-            createdBy: user?.primaryEmailAddress?.emailAddress
-        });
+            // Send the prompt to the AI model
+            const AIModelResult = await chatSession.sendMessage(PROMPT);
+
+            // Get the final answer from the AI model
+            const finalAns = AIModelResult.response.text().replace('```', '').replace('html', '').replace('```', '');
+            const allText = editor.getHTML();
+            editor.commands.setContent(allText + "<p> <strong> Answer:  </strong> </p>" + finalAns);
+            
+            // Save the notes to the database
+            saveNotes({
+                notes: editor.getHTML(),
+                fileId: fileId,
+                createdBy: user?.primaryEmailAddress?.emailAddress
+            });
+
+            toast.success('AI response added successfully!');
+        } catch (error) {
+            console.error('Error getting AI response:', error);
+            toast.error('Failed to get AI response. Please try again.');
+        } finally {
+            setIsAiLoading(false);
+        }
     }
+
+    // Function to handle download as HTML
+    const handleDownload = () => {
+        if (!editor) {
+            toast.error('Editor not ready');
+            return;
+        }
+
+        const notesContent = editor.getHTML();
+        if (!notesContent || notesContent.trim() === '') {
+            toast.error('No notes to download');
+            return;
+        }
+
+        // Create a blob with the HTML content
+        const blob = new Blob([notesContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create a temporary link element and trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `notes-${fileId}.html`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the URL object
+        URL.revokeObjectURL(url);
+        
+        toast.success('Notes downloaded successfully!');
+    };
 
   return editor && (
     <div className="border-b border-gray-200 p-2">
@@ -209,17 +252,34 @@ function EditorExtensions({editor}) {
             >
                 <AlignRight size={16} />
             </button>
+            
+            <button
+                onClick={() => handleDownload()}
+                className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+                    editor.isActive({ textAlign: 'right' }) ? 'bg-gray-200 text-gray-900' : 'text-gray-600'
+                }`}
+                title="Download Notes"
+            >
+                <Download size={16} className='inline-block mb-1'/> 
+            </button>
 
             <button
                 onClick={() => onAiButtonClick()}
-                className="p-2 rounded hover:opacity-80 transition-all bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
+                disabled={isAiLoading}
+                className={`p-1 pl-3 pr-3 rounded transition-all shadow-md ${
+                    isAiLoading 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-80'
+                } text-white`}
                 title="Generate AI Notes"
             >
-                <Sparkles size={16} className='inline-block mb-1'/> Ask AI
+                {isAiLoading ? (
+                    <Loader2 size={16} className='inline-block mb-1 animate-spin'/>
+                ) : (
+                    <Sparkles size={16} className='inline-block mb-1'/>
+                )}
+                {isAiLoading ? 'Thinking...' : 'Ask AI'}
             </button>
-
-
-
         </div>
     </div>
   )

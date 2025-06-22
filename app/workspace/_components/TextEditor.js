@@ -9,7 +9,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import { useQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 
-function TextEditor({fileId}) {
+function TextEditor({fileId, onEditorReady}) {
 
     const notes = useQuery(api.notes.GetNotes, {
         fileId: fileId,
@@ -42,6 +42,33 @@ function TextEditor({fileId}) {
             editor.commands.setContent(notes);
         }
     }, [notes && editor]);
+
+    useEffect(() => {
+        if (editor && onEditorReady) {
+            onEditorReady(editor);
+        }
+    }, [editor, onEditorReady]);
+
+    // Show skeleton while notes are being fetched
+    if (notes === undefined) {
+        return (
+            <div>
+                {/* Skeleton Toolbar */}
+                <div className="border-b border-gray-200 p-2 flex gap-1">
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+                    ))}
+                    <div className="h-8 w-24 bg-gray-100 rounded ml-4 animate-pulse" />
+                </div>
+                {/* Skeleton Text Area */}
+                <div className="overflow-scroll h-[88vh] bg-gray-50 p-5">
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} className="h-4 w-full max-w-[90%] bg-gray-200 rounded mb-3 animate-pulse" />
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     return (
     <div>
