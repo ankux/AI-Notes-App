@@ -47,7 +47,6 @@ const UploadPdfDialog = ({ children, isMaxLimit }) => {
             body: file,
         });
         const { storageId } = await result.json();
-        console.log('StorageId: ', storageId);
         
         const fileId = uuid4();
         const fileUrl = await getFileUrl({storageId: storageId});
