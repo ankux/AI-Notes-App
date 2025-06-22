@@ -6,6 +6,7 @@ import { useQuery } from 'convex/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react'
+import UploadPdfDialog from './_components/UploadPdfDialog';
 
 const Page = () => {
   const { user } = useUser();
@@ -26,6 +27,10 @@ const Page = () => {
     api.fileStorage.GetUserFiles,
     userEmail ? { userEmail } : undefined
   );
+
+  const handleUpload = () => {
+    UploadPdfDialog();
+  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -73,11 +78,6 @@ const Page = () => {
             <p className="text-gray-600 mb-6">
               Upload your first PDF to start taking intelligent notes with AI assistance.
             </p>
-            <Link href="/dashboard">
-              <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all">
-                Upload PDF
-              </button>
-            </Link>
           </div>
         </div>
       )}
