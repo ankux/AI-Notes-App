@@ -97,8 +97,13 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="px-6 py-20 text-center">
-        <div className="max-w-4xl mx-auto">
+      <section className="relative px-6 py-20 text-center overflow-hidden">
+        {/* Blurry Gradient Backgrounds */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+
+        <div className="relative max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Transform Your PDFs into
             <br />
