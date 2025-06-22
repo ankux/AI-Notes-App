@@ -5,10 +5,20 @@ import { useUser } from '@clerk/nextjs';
 import { useQuery } from 'convex/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
-const page = () => {
+const Page = () => {
   const { user } = useUser();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const userEmail = user?.primaryEmailAddress?.emailAddress;
 
@@ -40,7 +50,7 @@ const page = () => {
             </div>
           </Link>
         )) : 
-          [1,2,3,4,5,6,7,8].map((item, index) => (
+          (isMobile ? [1,2,3] : [1,2,3,4,5,6,7,8]).map((item, index) => (
             <div key={index} className='bg-slate-200 rounded-md h-[120px] sm:h-[150px] animate-pulse'>
             </div>
           ))
@@ -75,4 +85,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page
